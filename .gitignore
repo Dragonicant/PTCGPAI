@@ -1,2 +1,5 @@
 # Ignore Visual Studio files
 .vs/
+/PTCGPAI
+/x64/Debug
+*.sln
