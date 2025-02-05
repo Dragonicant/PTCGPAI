@@ -30,7 +30,7 @@ type_map = {
     "Fighting": "I",
     "Darkness": "D",
     "Metal": "M",
-    "Normal": "N",
+    "Colorless": "N",
     "Dragon": "R",
     }
 
