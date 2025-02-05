@@ -8,21 +8,6 @@
 
 using namespace std;
 
-// Condensed Hand View Function
-void displayCondensedHand(const vector<shared_ptr<Card>>& hand) {
-    unordered_map<string, int> cardCount;
-
-    // Count occurrences of each card in the hand
-    for (const auto& card : hand) {
-        cardCount[card->name]++;
-    }
-
-    cout << "Hand:" << endl;
-    for (const auto& entry : cardCount) {
-        cout << entry.second << "x " << entry.first << endl;  // Display the quantity and name of the card
-    }
-}
-
 class Deck {
 public:
     vector<shared_ptr<Card>> cards;  // A deck contains shared pointers to cards
@@ -51,25 +36,6 @@ public:
 
         cards.push_back(card);
         return true;
-    }
-
-    // Function to draw a card from the deck
-    shared_ptr<Card> drawCard() {
-        if (cards.empty()) {
-            cout << "Deck is empty!" << endl;
-            return nullptr;
-        }
-
-        shared_ptr<Card> drawnCard = cards.back();  // Draw the last card (this could be adjusted)
-        cards.pop_back();  // Remove it from the deck
-        return drawnCard;
-    }
-
-    // Function to make a shallow copy of the deck
-    Deck shallowCopy() const {
-        Deck copy;
-        copy.cards = cards;  // Copy the vector of cards (shallow copy)
-        return copy;
     }
 
     // Function to display the deck
@@ -122,7 +88,6 @@ public:
     }
 };
 
-// Renaming Deck to CardCollection for clarity
 class CardCollection {
 public:
     vector<Card> cards;  // Collection of cards

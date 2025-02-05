@@ -6,12 +6,87 @@
 #include <sstream>
 #include <iomanip>
 #include <cstdlib> // For system()
+#include <algorithm>    
+#include <random>
 
 #include "types.hpp"
 #include "deck.hpp"
 #include "utilities.hpp"
 
 using namespace std;
+
+class Game {
+public:
+    Game(shared_ptr<Deck> player1Deck, shared_ptr<Deck> player2Deck) {
+        // Create shallow copies of the player decks for use in the game state
+        playerDecks[0] = player1Deck;
+        playerDecks[1] = player2Deck;
+
+        // Initialize GameState with shallow copies of the decks
+        for (int i = 0; i < 2; i++) {
+            for (const auto& card : playerDecks[i]->cards) {
+                gameDecks[i].push_back(card);  // Copy each card into the game's deck
+            }
+        }
+
+        // Randomly select who goes first
+        random_device rd;
+        default_random_engine rng(rd());
+        currentPlayer = uniform_int_distribution<int>(0, 1)(rng);  // Randomly pick 0 or 1 for first player
+
+        cout << "Player " << currentPlayer + 1 << " will go first!" << endl;
+
+        // Draw 5 cards for each player
+        drawInitialCards(0);  // Draw 5 cards for Player 1
+        drawInitialCards(1);  // Draw 5 cards for Player 2
+    }
+
+    void shuffleDeck(int player) {
+        shuffle(gameDecks[player].begin(), gameDecks[player].end(), default_random_engine(random_device()()));
+        cout << "Player " << player + 1 << "'s deck has been shuffled.\n";
+    }
+
+    // Function to draw 5 cards for a player
+    void drawInitialCards(int player) {
+        for (int i = 0; i < 5; ++i) {
+            shared_ptr<Card> drawnCard = drawCard(player);
+            if (drawnCard) {
+                playerHands[player].push_back(drawnCard);  // Add drawn card to player's hand
+            }
+        }
+
+        cout << "Player " << player + 1 << " has drawn 5 cards." << endl;
+    }
+
+    // Draws a card from the deck and returns it
+    shared_ptr<Card> drawCard(int player) {
+        if (gameDecks[player].empty()) {
+            cout << "Player " << player + 1 << "'s deck is empty.\n";
+            return nullptr;
+        }
+        shared_ptr<Card> cardToDraw = gameDecks[player].back();
+        gameDecks[player].pop_back();  // Remove the card from the deck
+        return cardToDraw;
+    }
+
+    // Method to show each player's hand
+    void showHands() const {
+        for (int i = 0; i < 2; ++i) {
+            cout << "Player " << i + 1 << " hand:" << endl;
+            for (const auto& card : playerHands[i]) {
+                cout << card->name << endl;  // Assuming Card has a name field
+            }
+            cout << endl;
+        }
+    }
+
+private:
+    shared_ptr<Deck> playerDecks[2];  // Physical decks for each player
+    vector<shared_ptr<Card>> gameDecks[2];  // Game's working copies of the decks
+    vector<shared_ptr<Card>> playerHands[2];  // Player hands
+
+    int currentPlayer;  // Track which player's turn it is
+};
 
 int main() {
     //runScraper();
@@ -52,31 +127,15 @@ int main() {
         }
     }
 
-    // Step 4: Create shallow copies of the decks for the battle
-    Deck battleDeck1 = deck1.shallowCopy();
-    Deck battleDeck2 = deck2.shallowCopy();
+    // Assuming deck1 and deck2 are Deck objects
+    shared_ptr<Deck> deck1Ptr = make_shared<Deck>(deck1);
+    shared_ptr<Deck> deck2Ptr = make_shared<Deck>(deck2);
 
-    // Step 5: Simulate a game where each deck draws a card into its hand
-    cout << "Battle Start!" << endl;
+    // Instantiate a new game with the player decks
+    Game game(deck1Ptr, deck2Ptr);
 
-    // Draw 3 cards from each deck as an example
-    vector<shared_ptr<Card>> hand1;
-    vector<shared_ptr<Card>> hand2;
-
-    for (int i = 0; i < 3; ++i) {
-        shared_ptr<Card> card1 = battleDeck1.drawCard();
-        shared_ptr<Card> card2 = battleDeck2.drawCard();
-
-        if (card1) hand1.push_back(card1);
-        if (card2) hand2.push_back(card2);
-    }
-
-    // Step 6: Display the hands
-    cout << "\nHand 1 (Condensed View):" << endl;
-    displayCondensedHand(hand1);
-
-    cout << "\nHand 2 (Condensed View):" << endl;
-    displayCondensedHand(hand2);
+    // Display hands for both players
+    game.showHands();
 
     return 0;
 }
